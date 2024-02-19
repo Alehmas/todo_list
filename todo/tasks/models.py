@@ -34,11 +34,11 @@ class Task(models.Model):
     title = models.CharField('Title', max_length=200)
     description = models.TextField('Description', null=True, blank=True)
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default=NEW)
+        'Status', max_length=20, choices=STATUS_CHOICES, default=NEW)
     created = models.DateTimeField('Creation date', auto_now_add=True)
     user_id = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='tasks'
-    )
+        User, verbose_name='Author', on_delete=models.CASCADE,
+        related_name='tasks')
 
     class Meta:
         ordering = ('-created',)
