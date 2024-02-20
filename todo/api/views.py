@@ -1,7 +1,10 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from tasks.models import Task
@@ -32,10 +35,10 @@ class TaskViewSet(viewsets.ModelViewSet):
         PUT /tasks/{id}/
 
         To partially update an existing task:
-        PUTCH /tasks/{id}/
+        PATCH /tasks/{id}/
 
         To mark a task as completed:
-        PUTCH /tasks/{id}/completed
+        PATCH /tasks/{id}/completed
 
         To delete an existing task:
         DELETE /tasks/{id}/
@@ -52,13 +55,36 @@ class TaskViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(user_id=self.request.user)
 
+    @swagger_auto_schema(
+            methods=['get'], operation_summary="My tasks",
+            operation_description="Get a list of all user tasks.")
     @action(detail=False,)
     def my(self, request):
         """Get a list of all user tasks."""
         tasks = Task.objects.filter(user_id=request.user.id)
-        serializer = self.get_serializer(tasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        status_contains = request.query_params.get('status')
+        if status_contains:
+            tasks = tasks.filter(status__icontains=status_contains)
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(tasks, request)
+        serializer = self.get_serializer(page, many=True)
+        data = {
+            'count': paginator.page.paginator.count,
+            'next': paginator.get_next_link(),
+            'previous': paginator.get_previous_link(),
+            'results': serializer.data
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+            methods=['patch'], operation_summary="Task complete",
+            operation_description="Set that the task has been completed.",
+            request_body=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={}
+            ),
+            responses={200: TaskSerializer()}
+    )
     @action(detail=True, methods=['patch'])
     def completed(self, request, pk=None):
         """Change the status of a specific user task to completed."""
