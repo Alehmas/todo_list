@@ -1,10 +1,28 @@
 openapi: 3.0.2
 info:
-  title: 'Documentation for the tasks application of the Todo List project'
+  title: 'Todo List Application Documentation'
+  description: |-
+    Welcome to the Todo List API documentation. This document provides details about the RESTful API endpoints available for managing tasks and todo lists in the Todo List application.
+    
+    **Base URL**
+    
+    The base URL if you deploy it on your local computer to access the Todo List API is the following http://127.0.0.1:8000/api/
+    
+    **Authentication**
+    
+    The Todo List API uses authentication on JWT tokens. Tokens can be obtained by logging into the application and retrieving a token from the authentication endpoint. To do this, it is necessary to:
+    - create a user(if not already present) through the endpoint [http://127.0.0.1:8000/api/auth/users/](http://127.0.0.1:8000/api/auth/users/)
+    - create a token via the [http://127.0.0.1:8000/api/auth/jwt/create/](http://127.0.0.1:8000/api/auth/jwt/create/) endpoint.
+    - receive a token to add to each request.
+    
+    **Support and Feedback:**
+    For any questions, issues, or feedback, please contact with me _maslaualeh@gmail.com_.
+    
   version: ''
 paths:
   /api/tasks/:
     get:
+      summary: Retrieve a list of tasks.
       operationId: listTasks
       description: "To access all tasks"
       parameters:
@@ -52,8 +70,9 @@ paths:
       tags:
       - task
     post:
+      summary: Create a new task.
       operationId: createTask
-      description: "To create a new task"
+      description: "To create a new task. The field _title_ is required."
       parameters: []
       requestBody:
         content:
@@ -78,28 +97,14 @@ paths:
   /api/tasks/my/:
     get:
       operationId: myTask
-      description: Get a list of all user tasks.
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
-          description: ''
-      tags:
-      - task
-  /api/tasks/{id}/:
-    get:
-      operationId: retrieveTask
-      description: "To retrieve a specific task"
+      description: Get a list of all user's tasks.
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: A unique integer value identifying this Task.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
         schema:
-          type: string
+          type: integer
       - name: status
         required: false
         in: query
@@ -110,6 +115,45 @@ paths:
           - New
           - In Progress
           - Completed
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+          description: ''
+      tags:
+      - task
+  /api/tasks/{id}/:
+    get:
+      summary: Retrieve details of a specific task.
+      operationId: retrieveTask
+      description: "To retrieve a specific task"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Task.
+        schema:
+          type: string
       responses:
         '200':
           content:
@@ -120,6 +164,7 @@ paths:
       tags:
       - task
     put:
+      summary: Full update details of a specific task.
       operationId: updateTask
       description: "To completely update an existing task"
       parameters:
@@ -129,16 +174,6 @@ paths:
         description: A unique integer value identifying this Task.
         schema:
           type: string
-      - name: status
-        required: false
-        in: query
-        description: status
-        schema:
-          type: string
-          enum:
-          - New
-          - In Progress
-          - Completed
       requestBody:
         content:
           application/json:
@@ -160,6 +195,7 @@ paths:
       tags:
       - task
     patch:
+      summary: Partial update of the details of a specific task.
       operationId: partialUpdateTask
       description: "To partially update an existing task"
       parameters:
@@ -169,16 +205,6 @@ paths:
         description: A unique integer value identifying this Task.
         schema:
           type: string
-      - name: status
-        required: false
-        in: query
-        description: status
-        schema:
-          type: string
-          enum:
-          - New
-          - In Progress
-          - Completed
       requestBody:
         content:
           application/json:
@@ -200,6 +226,7 @@ paths:
       tags:
       - task
     delete:
+      summary: Delete a specific task.
       operationId: destroyTask
       description: "To delete an existing task"
       parameters:
@@ -209,23 +236,35 @@ paths:
         description: A unique integer value identifying this Task.
         schema:
           type: string
-      - name: status
-        required: false
-        in: query
-        description: status
-        schema:
-          type: string
-          enum:
-          - New
-          - In Progress
-          - Completed
       responses:
         '204':
           description: ''
       tags:
       - task
+  /api/tasks/{id}/completed/:
+    patch:
+      summary: Complete the task.
+      operationId: completedTask
+      description: Change the status of a specific user task to completed.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this Task.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+          description: ''
+      tags:
+      - task
   /api/auth/users/:
     get:
+      summary: Retrieve a list of users.
       operationId: listUsers
       description: ''
       parameters:
@@ -263,6 +302,7 @@ paths:
       tags:
       - auth
     post:
+      summary: Create a new user.
       operationId: createUser
       description: ''
       parameters: []
@@ -288,6 +328,7 @@ paths:
       - auth
   /api/auth/users/me/:
     get:
+      summary:  Retrieve details of a user.
       operationId: meUser
       description: ''
       parameters: []
@@ -301,7 +342,8 @@ paths:
       tags:
       - auth
     put:
-      operationId: meUser
+      summary:  Update details of a user.
+      operationId: meUserPut
       description: ''
       parameters: []
       requestBody:
@@ -325,6 +367,7 @@ paths:
       tags:
       - auth
     patch:
+      summary:  Partial update of the details of a user.
       operationId: meUser
       description: ''
       parameters: []
@@ -349,7 +392,8 @@ paths:
       tags:
       - auth
     delete:
-      operationId: meUser
+      summary:  Delete a user.
+      operationId: meUserDel
       description: ''
       parameters: []
       responses:
@@ -359,6 +403,7 @@ paths:
       - auth
   /api/auth/users/{id}/:
     get:
+      summary:  Retrieve details of a specific user.
       operationId: retrieveUser
       description: ''
       parameters:
@@ -378,6 +423,7 @@ paths:
       tags:
       - auth
     put:
+      summary:  Update details of a specific user.
       operationId: updateUser
       description: ''
       parameters:
@@ -408,6 +454,7 @@ paths:
       tags:
       - auth
     patch:
+      summary:  Partial update of the details of a specific user.
       operationId: partialUpdateUser
       description: ''
       parameters:
@@ -438,6 +485,7 @@ paths:
       tags:
       - auth
     delete:
+      summary:  Delete a specific user.
       operationId: destroyUser
       description: ''
       parameters:
@@ -604,6 +652,7 @@ paths:
       - auth
   /api/auth/users/set_password/:
     post:
+      summary:  To change user password.
       operationId: setPasswordUser
       description: ''
       parameters: []
@@ -629,6 +678,7 @@ paths:
       - auth
   /api/auth/users/set_username/:
     post:
+      summary:  To change  user’s name.
       operationId: setUsernameUser
       description: ''
       parameters: []
@@ -654,6 +704,7 @@ paths:
       - auth
   /api/auth/jwt/create/:
     post:
+      summary:  Create JWT token.
       operationId: createTokenObtainPair
       description: 'Takes a set of user credentials and returns an access and refresh
         JSON web
@@ -682,6 +733,7 @@ paths:
       - auth
   /api/auth/jwt/refresh/:
     post:
+      summary:  Refresh JWT token.
       operationId: createTokenRefresh
       description: 'Takes a refresh type JSON web token and returns an access type
         JSON web
@@ -710,10 +762,9 @@ paths:
       - auth
   /api/auth/jwt/verify/:
     post:
+      summary:  Verify JWT token.
       operationId: createTokenVerify
-      description: 'Takes a token and indicates if it is valid.  This view provides
-        no
-
+      description: 'Takes a token and indicates if it is valid.  This view provides no
         information about a token''s fitness for a particular use.'
       parameters: []
       requestBody:
@@ -733,37 +784,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenVerify'
-          description: ''
-      tags:
-      - task
-  /api/tasks/{id}/completed/:
-    patch:
-      operationId: completedTask
-      description: Change the status of a specific user task to completed.
-      parameters:
-      - name: id
-        in: path
-        required: true
-        description: A unique integer value identifying this Task.
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Task'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Task'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Task'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
           description: ''
       tags:
       - auth

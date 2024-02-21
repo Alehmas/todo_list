@@ -14,7 +14,7 @@ schema_view = get_schema_view(
    openapi.Info(
       title="ToDo API",
       default_version='v1',
-      description="Documentation for the tasks application of the Todo List project",
+      description="Documentation for Todo List application.",
       contact=openapi.Contact(email="admin@gmail.com"),
       license=openapi.License(name="BSD License"),
    ),
