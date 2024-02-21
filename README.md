@@ -29,7 +29,7 @@ The Todo application is a simple task management tool designed to help users org
 - Create/edit/delete your own user
 
 
-## Run the project locally
+## Run the project
 ### Clone the repository
 Clone the repository to your local machine:
 ```bash
@@ -41,14 +41,7 @@ Move to a new directory
 cd todo_list/
 ```
 
-### Launching and working with the project
-**Step 1** Create a virtual environment and activate it:
-```bash
-python -m venv venv
-source venv/Scripts/activate
-```
-
-**Step 2** Create an _todo_list/todo/todo/.env_ file with the touch .env command and add environment variables to it:
+Create an _todo_list/todo/todo/.env_ file with the touch .env command and add environment variables to it:
 ```bash
 DB_ENGINE=django.db.backends.postgresql
 DB_NAME=postgres
@@ -60,28 +53,54 @@ SECRET_KEY=<your_django_secret_key>
 ```
 To ensure the safety of the project, after adding .env to `setting.py`, you must remove the *default* values ​​in the variables.
 
-**Step 3** Update pip and install dependencies:
+### Launching and working with the project locally
+**Step 1** Create a virtual environment and activate it:
+```bash
+python -m venv venv
+source venv/Scripts/activate
+```
+
+**Step 2** Update pip and install dependencies:
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-**Step 4** From the directory with the file `manage.py` run the migrations:
+**Step 3** From the directory with the file `manage.py` run the migrations:
 ```bash
 python manage.py migrate
 ```
 
-**Step 5** Create a superuser:
+**Step 4** Create a superuser:
 ```bash
 python manage.py createsuperuser
 ```
 
-**Step 6** Project launch:
+**Step 5** Project launch:
 ```bash
 python manage.py runserver
 ```
 
 **Step 6** Fill out the database using APi endpoints
+
+### Launching and working with a project in containers
+**Step 1** Move to a _todo/_ directory and collect containers:
+```bash
+cd todo/
+docker-compose up -d --build
+```
+Upon successful creation of containers in the terminal, the status should be:
+```
+    Starting db ... done
+    Starting todo_web ... done
+```
+
+**Step 2** Create superuser:
+```bash
+docker-compose exec web python manage.py createsuperuser
+```
+
+**Step 3** Fill out the database using APi endpoints
 
 ##  Project Applications
 All applications of the project are covered by tests.
